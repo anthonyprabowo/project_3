@@ -93,6 +93,10 @@ function emailValidator(text) {
     const regex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return regex.test(text)
 }
+function numberValidator(text) {
+    const regex = /^[0-9]*$/
+    return regex.test(text)
+}
 function validator(element, bool) {
     correct.push(bool);
     if(bool){
@@ -144,20 +148,20 @@ form.addEventListener('submit', (e) => {
     correct.push(activitiesChecker)
     // check if the credit-card payment is selected, then do the validation
     if(payment.value === 'credit-card') { 
-        if(ccNum.value.length >= 13 && ccNum.value.length <= 16) {
+        if(ccNum.value.length >= 13 && ccNum.value.length <= 16 && numberValidator(ccNum.value)) {
             validator(ccNum, true);
         } else {
             validator(ccNum, false);
         }
-        if(zip.value.length != 5) {
-            validator(zip, false);
-        } else {
+        if(zip.value.length == 5 && numberValidator(zip.value)) {
             validator(zip, true);
-        } 
-        if(cvv.value.length != 3) {
-            validator(cvv, false);
         } else {
+            validator(zip, false);
+        } 
+        if(cvv.value.length == 3 && numberValidator(cvv.value)) {
             validator(cvv, true);
+        } else {
+            validator(cvv, false);
         }
     }
     if(!correct.includes(false)){
@@ -195,6 +199,23 @@ for(let i = 0; i < activities.length; i++) {
                 }
             }
         }
+        // validating if one of the activities is pressed
+        for(let i = 0; i < activities.length; i++) {
+            if(activities[i].checked === true) {
+                registerActivities.style.color = 'black';
+                activity.classList.remove('not-valid')
+                activity.classList.add('valid')
+                activitiesChecker = true;
+                activity.lastElementChild.style.display = 'none';
+                break;
+            } else {
+                registerActivities.style.color = 'red';
+                activity.classList.remove('valid')
+                activity.classList.add('not-valid')
+                activity.lastElementChild.style.display = 'block';
+                activitiesChecker = false
+            }
+        }
     });
 }
 
@@ -220,7 +241,7 @@ email.addEventListener('keyup', () => {
 
 ccNum.addEventListener('keyup', () => {
     if(ccNum.value !== "") {
-        if(ccNum.value.length >= 13 && ccNum.value.length <= 16) {
+        if(ccNum.value.length >= 13 && ccNum.value.length <= 16 && numberValidator(ccNum.value)) {
             validator(ccNum, true);
         } else {
             validator(ccNum, false);
@@ -231,20 +252,20 @@ ccNum.addEventListener('keyup', () => {
 
 zip.addEventListener('keyup', () => {
     if(zip.value !== "") {
-        if(zip.value.length != 5) {
-            validator(zip, false);
-        } else {
+        if(zip.value.length == 5 && numberValidator(zip.value)) {
             validator(zip, true);
+        } else {
+            validator(zip, false);
         }
     }
 })
 
 cvv.addEventListener('keyup', () => {
-    if(cvv.value !== "") {
-        if(cvv.value.length != 3) {
-            validator(cvv, false);
-        } else {
+    if(cvv.value !== "" && numberValidator(cvv.value)) {
+        if(cvv.value.length == 3) {
             validator(cvv, true);
+        } else {
+            validator(cvv, false);
         }
     }
     
