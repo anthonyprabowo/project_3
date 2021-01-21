@@ -5,18 +5,22 @@ const otherJobRole = document.getElementById('other-job-role');
 const color = document.querySelector('#color');
 const colorOption = document.querySelectorAll('#color > option');
 const design = document.querySelector('#design');
+const activity = document.querySelector('#activities');
 const registerActivities = document.querySelector('#activities > legend');
 const activityBox = document.querySelector('.activities-box');
 const activities = document.querySelectorAll('label > input[type="checkbox"]');
 const payment = document.querySelector('#payment');
 const paymentOption = document.querySelectorAll('#payment > option');
 const creditCard = document.querySelector('#credit-card');
+const ccNum = document.querySelector('#cc-num');
+const zip = document.querySelector('#zip');
+const cvv = document.querySelector('#cvv');
 const paypal = document.querySelector('#paypal');
 const bitcoin = document.querySelector('#bitcoin');
-otherJobRole.style.display = 'none';
+otherJobRole.style.display = 'none'; // remove other job role textbox on load
 let prevTarget = '';
 let total = 0;
-let correct = true;
+let correct = [];
 
 // setting focus property on name when loaded
 document.getElementById('name').focus();
@@ -86,41 +90,163 @@ payment.addEventListener('click', e => {
 // validation
 // email validator
 function emailValidator(text) {
-    const regex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
-    return regex.test(text);
+    const regex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return regex.test(text)
+}
+function validator(element, bool) {
+    correct.push(bool);
+    if(bool){
+        element.style.border = '';
+        element.parentElement.classList.remove('not-valid');
+        element.parentElement.className = 'valid';
+        element.parentElement.lastElementChild.style.display = 'none';
+    } else {
+        element.style.border = '2px solid red';
+        element.parentElement.classList.remove('valid');
+        element.parentElement.className = 'not-valid';
+        element.parentElement.lastElementChild.style.display = 'block';
+    }
 }
 // input validation
 form.addEventListener('submit', (e) => {
     e.preventDefault();
+    correct = [];
     // check if name is valid
     if(userName.value === "") {
-        userName.style.border = '2px solid red';
-        correct = false
+        validator(userName, false);
     } else {
-        userName.style.border = '';
-        correct = true;
+        validator(userName, true);
     }
     // check if email is valid
     if(!emailValidator(email.value)){
-        email.style.border = '2px solid red';
-        correct = false;
+        validator(email, false);
     } else {
-        email.style.border = '';
-        correct = true;
+        validator(email, true);
     }
     // check if user checked one of the activities
+    let activitiesChecker = true;
     for(let i = 0; i < activities.length; i++) {
         if(activities[i].checked === true) {
             registerActivities.style.color = 'black';
-            correct = true;
+            activity.classList.remove('not-valid')
+            activity.classList.add('valid')
+            activitiesChecker = true;
+            activity.lastElementChild.style.display = 'none';
             break;
         } else {
             registerActivities.style.color = 'red';
-            correct = false
+            activity.classList.remove('valid')
+            activity.classList.add('not-valid')
+            activity.lastElementChild.style.display = 'block';
+            activitiesChecker = false
         }
     }
-    if(correct){
+    correct.push(activitiesChecker)
+    // check if the credit-card payment is selected, then do the validation
+    if(payment.value === 'credit-card') { 
+        if(ccNum.value.length >= 13 && ccNum.value.length <= 16) {
+            validator(ccNum, true);
+        } else {
+            validator(ccNum, false);
+        }
+        if(zip.value.length != 5) {
+            validator(zip, false);
+        } else {
+            validator(zip, true);
+        } 
+        if(cvv.value.length != 3) {
+            validator(cvv, false);
+        } else {
+            validator(cvv, true);
+        }
+    }
+    if(!correct.includes(false)){
+        alert('Your form has been submitted!');
         form.submit();
         form.reset();
     }
 });
+
+// accesibility
+// adding focus class on focus and remove them on blur
+// focus
+for(let i = 0; i < activities.length; i++) {
+    activities[i].addEventListener('focus', () => {
+        activities[i].parentElement.className = 'focus';
+    })
+    activities[i].addEventListener('blur', () => {
+        activities[i].parentElement.className = '';
+    })
+}
+
+// disable conflicting schedule
+for(let i = 0; i < activities.length; i++) {
+    activities[i].addEventListener('click', () => {
+        for(let x = 1; x < activities.length; x++) {
+            // check if a check box is checked and if the date attribute is the same
+            if(activities[i].checked === true && x != i && activities[i].getAttribute('data-day-and-time') === activities[x].getAttribute('data-day-and-time')) {
+                activities[x].parentElement.classList.add('disabled');
+                activities[x].disabled = true;
+            } else {
+                // check if the checkbox isn't disabled, and remove only if the attributes are the same
+                if(activities[x].disabled !== true || activities[i].checked === false && activities[i].getAttribute('data-day-and-time') === activities[x].getAttribute('data-day-and-time')) {
+                    activities[x].parentElement.classList.remove('disabled');
+                    activities[x].disabled = false;
+                }
+            }
+        }
+    });
+}
+
+// real-time error message
+userName.addEventListener('keyup', () => {
+    if(userName.value === "") {
+        validator(userName, false)
+    } else {
+        validator(userName, true);
+    }
+});
+
+email.addEventListener('keyup', () => {
+    if(email.value !== "") {
+        if(!emailValidator(email.value)) {
+            validator(email, false);
+        } else {
+            validator(email, true);
+        }
+    }
+    
+});
+
+ccNum.addEventListener('keyup', () => {
+    if(ccNum.value !== "") {
+        if(ccNum.value.length >= 13 && ccNum.value.length <= 16) {
+            validator(ccNum, true);
+        } else {
+            validator(ccNum, false);
+        }
+    }
+    
+});
+
+zip.addEventListener('keyup', () => {
+    if(zip.value !== "") {
+        if(zip.value.length != 5) {
+            validator(zip, false);
+        } else {
+            validator(zip, true);
+        }
+    }
+})
+
+cvv.addEventListener('keyup', () => {
+    if(cvv.value !== "") {
+        if(cvv.value.length != 3) {
+            validator(cvv, false);
+        } else {
+            validator(cvv, true);
+        }
+    }
+    
+})
+
