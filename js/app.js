@@ -111,6 +111,14 @@ function validator(element, bool) {
         element.parentElement.lastElementChild.style.display = 'block';
     }
 }
+function createSecondHint(element, message) {
+    const span = document.createElement('span');
+    span.innerHTML = message
+    span.classList.add('second-hint');
+    span.classList.add('hint');
+    element.parentElement.appendChild(span);
+    element.parentElement.lastElementChild.style.display = 'block';
+}
 // input validation
 form.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -243,7 +251,17 @@ ccNum.addEventListener('keyup', () => {
     if(ccNum.value !== "") {
         if(ccNum.value.length >= 13 && ccNum.value.length <= 16 && numberValidator(ccNum.value)) {
             validator(ccNum, true);
-        } else {
+        } else if(ccNum.value.length > 16) {
+            validator(ccNum, false);
+            if(!ccNum.parentElement.lastElementChild.className.includes('second-hint')) {
+                ccNum.parentElement.lastElementChild.style.display = 'none';
+                createSecondHint(ccNum, "You typed too many numbers");
+            }
+        } 
+        else {
+            if(ccNum.parentElement.lastElementChild.className.includes('second-hint')) {
+                ccNum.parentElement.removeChild(ccNum.parentElement.lastElementChild);
+            }
             validator(ccNum, false);
         }
     }
