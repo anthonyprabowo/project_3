@@ -36,7 +36,7 @@ document.getElementById('title').addEventListener('click', e => {
 
 // t-shirt info
 color.disabled = true;
-design.addEventListener('click', e => {
+design.addEventListener('change', e => {
     if(e.target.value === 'js puns' || e.target.value === 'heart js') {
         color.disabled = false;
         if(e.target.value !== prevTarget) {
